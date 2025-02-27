@@ -17,28 +17,30 @@ app.post('/get-cookies', async (req, res) => {
     try {
         const browser = await puppeteer.launch({
             args: ["--no-sandbox", "--disable-setuid-sandbox"],
-            headless: "new",  // Chạy chế độ headless để tránh lỗi
+            headless: "new",
             executablePath: "/usr/bin/chromium",
         });
 
         const page = await browser.newPage();
-        await page.goto('http://blueprint.cyberlogitec.com.vn/', { waitUntil: 'networkidle2' });
+        await page.setViewport({ width: 1280, height: 800 }); // Tăng tốc render
 
-        // ✅ Điền thông tin đăng nhập
-        await page.type('input[name="username"]', username);
-        await page.type('input[name="password"]', password);
+        // Tải trang nhanh hơn
+        await page.goto('http://blueprint.cyberlogitec.com.vn/', { waitUntil: 'domcontentloaded' });
 
-        // 👉 Bấm nút đăng nhập (Cập nhật selector nếu cần)
-        await Promise.all([
+        // Điền thông tin nhanh hơn
+        await page.type('input[name="username"]', username, { delay: 10 });
+        await page.type('input[name="password"]', password, { delay: 10 });
+
+        // Giới hạn thời gian chờ tối đa 5 giây
+        await Promise.race([
             page.click('button[type="submit"]'),
-            page.waitForNavigation({ waitUntil: 'networkidle2' })
+            page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 5000 })
         ]);
 
-        // 🍪 Lấy cookies sau khi đăng nhập
-        storedCookies = await page.cookies();
+        // Lấy cookies
+        const storedCookies = await page.cookies();
 
         await browser.close();
-
         res.json({ status: 'success', cookies: storedCookies });
     } catch (err) {
         console.error(err);
