@@ -16,8 +16,9 @@ app.post('/get-cookies', async (req, res) => {
 
     try {
         const browser = await puppeteer.launch({
-            headless: true, // Bật chế độ headless để chạy trên server
-            args: ['--no-sandbox', '--disable-setuid-sandbox']
+            executablePath: "/usr/bin/google-chrome",  // Đường dẫn cố định cho Chrome
+            args: ["--no-sandbox", "--disable-setuid-sandbox"],
+            headless: "new",
         });
 
         const page = await browser.newPage();
@@ -48,6 +49,10 @@ app.post('/get-cookies', async (req, res) => {
 // 📡 Endpoint để truy vấn lại cookies đã lưu
 app.get('/cookies', (req, res) => {
     res.json({ cookies: storedCookies });
+});
+
+app.get('/', (req, res) => {
+    res.json({ "hello": "world" });
 });
 
 app.listen(PORT, () => {

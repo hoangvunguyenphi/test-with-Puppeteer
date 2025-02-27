@@ -1,11 +1,16 @@
+# Sử dụng Node.js làm nền tảng
 FROM node:18
 
+# Thiết lập thư mục làm việc
 WORKDIR /app
-COPY package.json package-lock.json ./
-RUN npm install
-COPY . .
 
-# Cài đặt Puppeteer dependencies
+# Sao chép file package.json và package-lock.json trước
+COPY package.json package-lock.json ./
+
+# Cài đặt Puppeteer (đảm bảo Chromium được tải về)
+RUN npm install
+
+# Cài đặt Chromium thủ công
 RUN apt-get update && apt-get install -y \
     wget \
     ca-certificates \
@@ -24,5 +29,11 @@ RUN apt-get update && apt-get install -y \
     xdg-utils \
     && rm -rf /var/lib/apt/lists/*
 
+# Sao chép toàn bộ mã nguồn vào container
+COPY . .
+
+# Mở cổng 3000
 EXPOSE 3000
-CMD ["node", "index.js"]
+
+# Khởi động server
+CMD ["node", "server.js"]
