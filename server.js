@@ -37,7 +37,7 @@ app.post('/get-cookies', async (req, res) => {
 
         // Chờ xác định login thành công dựa trên sự thay đổi UI
         await Promise.race([
-            page.waitForSelector('#UI_DMM_HomeBody'),
+            page.waitForSelector('body'),
             page.waitForNavigation({ waitUntil: 'domcontentloaded' }) // Hoặc điều hướng xong
         ]);
         console.log("-----login sucess: done");
