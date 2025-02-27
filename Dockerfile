@@ -1,28 +1,37 @@
-# Sử dụng Node.js làm nền tảng
 FROM node:18
 
-# Thiết lập thư mục làm việc
-WORKDIR /app
-
-# Sao chép file package.json và package-lock.json trước
-COPY package.json package-lock.json ./
-
-# Cài đặt Puppeteer (đảm bảo Chromium được tải về)
-RUN npm install
-
-# Cài đặt Chromium thủ công
-RUN apt-get update && apt-get install curl gnupg -y \
-  && curl --location --silent https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
-  && sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list' \
-  && apt-get update \
-  && apt-get install google-chrome-stable -y --no-install-recommends \
+# Install necessary dependencies for Puppeteer and Chromium
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  fonts-liberation \
+  libasound2 \
+  libatk-bridge2.0-0 \
+  libatk1.0-0 \
+  libcups2 \
+  libdrm2 \
+  libgbm1 \
+  libgtk-3-0 \
+  libnspr4 \
+  libnss3 \
+  libx11-xcb1 \
+  libxcomposite1 \
+  libxdamage1 \
+  libxrandr2 \
+  xdg-utils \
+  libu2f-udev \
+  libxshmfence1 \
+  libglu1-mesa \
+  chromium \
+  && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
-# Sao chép toàn bộ mã nguồn vào container
+WORKDIR /app
+COPY ./package.json ./
+RUN npm install
 COPY . .
+EXPOSE 3000
 
-# Mở cổng 3000
-EXPOSE 8080
+# Puppeteer setup: Skip Chromium download and use the installed Chromium
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+ENV PUPPETEER_EXECUTABLE_PATH="/usr/bin/chromium"
 
-# Khởi động server
-CMD ["node", "server.js"]
+CMD ["npm", "start"]
