@@ -7,6 +7,8 @@ WORKDIR /app
 # Sao chép file package.json và package-lock.json trước
 COPY package.json package-lock.json ./
 
+RUN apt-get install chromium -y
+
 # Cài đặt Puppeteer (đảm bảo Chromium được tải về)
 RUN npm install
 
