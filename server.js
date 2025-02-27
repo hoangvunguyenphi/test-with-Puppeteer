@@ -8,7 +8,7 @@ const PORT = process.env.PORT || 5000;
 app.use(express.json());
 app.use(cors());
 
-let jsession_id = "";
+let storedCookies = [];
 
 // 📡 Endpoint để lấy cookie từ trang web
 app.post('/get-cookies', async (req, res) => {
@@ -37,34 +37,29 @@ app.post('/get-cookies', async (req, res) => {
 
         // Chờ xác định login thành công dựa trên sự thay đổi UI
         await Promise.race([
-            page.waitForSelector('body'),
-            page.waitForNavigation({ waitUntil: 'load' }) // Hoặc điều hướng xong
+            page.waitForSelector('#UI_DMM_HomeBody'),
+            page.waitForNavigation({ waitUntil: 'domcontentloaded' }) // Hoặc điều hướng xong
         ]);
         console.log("-----login sucess: done");
 
         // Lấy cookies
-        const storedCookies = await page.cookies();
+        storedCookies = await page.cookies();
+        await browser.close();
 
-        await browser.close(); 
+        console.log(storedCookies);
 
-        for(cookie in storedCookies["cookies"]){
-            if(cookie["name"] == "JSESSIONID"){
-                jsession_id = cookie["value"];
-                break;
-            }
-        }
-        res.json({ status: 'success', jsessionid: jsession_id });
+        res.json({ status: 'success', cookies: storedCookies });
     } catch (err) {
-        console.error('Lỗi xử lý:', err);
-        res.status(500).json({ status: 'error', message: err });
+        console.error(err);
+        res.status(500).json({ status: 'error', message: err.toString() });
     }
 });
 
-
 // 📡 Endpoint để truy vấn lại cookies đã lưu
 app.get('/cookies', (req, res) => {
-    res.json({ jsession_id: jsession_id });
+    res.json({ cookies: storedCookies });
 });
+
 
 app.get('/', (req, res) => {
     res.json({ "hello": "world" });
