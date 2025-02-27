@@ -18,6 +18,7 @@ app.post('/get-cookies', async (req, res) => {
         const browser = await puppeteer.launch({
             args: ["--no-sandbox", "--disable-setuid-sandbox"],
             headless: "new",  // Chạy chế độ headless để tránh lỗi
+            executablePath: "/usr/bin/chromium",
         });
 
         const page = await browser.newPage();
