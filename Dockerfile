@@ -7,35 +7,22 @@ WORKDIR /app
 # Sao chép file package.json và package-lock.json trước
 COPY package.json package-lock.json ./
 
-RUN apt-get install chromium -y
-
 # Cài đặt Puppeteer (đảm bảo Chromium được tải về)
 RUN npm install
 
 # Cài đặt Chromium thủ công
-RUN apt-get update && apt-get install -y \
-    wget \
-    ca-certificates \
-    fonts-liberation \
-    libappindicator3-1 \
-    libasound2 \
-    libatk-bridge2.0-0 \
-    libatk1.0-0 \
-    libcups2 \
-    libdbus-1-3 \
-    libgdk-pixbuf2.0-0 \
-    libnspr4 \
-    libnss3 \
-    libxcomposite1 \
-    libxrandr2 \
-    xdg-utils \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install curl gnupg -y \
+  && curl --location --silent https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
+  && sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list' \
+  && apt-get update \
+  && apt-get install google-chrome-stable -y --no-install-recommends \
+  && rm -rf /var/lib/apt/lists/*
 
 # Sao chép toàn bộ mã nguồn vào container
 COPY . .
 
 # Mở cổng 3000
-EXPOSE 3000
+EXPOSE 8080
 
 # Khởi động server
 CMD ["node", "server.js"]
