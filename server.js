@@ -21,19 +21,22 @@ app.post('/get-cookies', async (req, res) => {
         });
 
         const page = await browser.newPage();
-        await page.setViewport({ width: 1280, height: 800 }); // Tăng tốc render
+        await page.setViewport({ width: 1280, height: 800 });
 
-        // Tải trang nhanh hơn
-        await page.goto('http://blueprint.cyberlogitec.com.vn/', { waitUntil: 'domcontentloaded' });
+        // Truy cập trang đăng nhập, chỉ chờ DOM tải xong
+        await page.goto('http://blueprint.cyberlogitec.com.vn/', { waitUntil: 'domcontentloaded', timeout: 5000 });
 
-        // Điền thông tin nhanh hơn
+        // Nhập thông tin nhanh hơn
         await page.type('input[name="username"]', username, { delay: 10 });
         await page.type('input[name="password"]', password, { delay: 10 });
 
-        // Giới hạn thời gian chờ tối đa 5 giây
+        // Nhấn nút đăng nhập
+        await page.click('button[type="submit"]');
+
+        // Chờ xác định login thành công dựa trên sự thay đổi UI
         await Promise.race([
-            page.click('button[type="submit"]'),
-            page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 5000 })
+            page.waitForSelector('#UI_DMM_HomeBody', { timeout: 5000 }), // Chờ trang chính xuất hiện
+            page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 5000 }) // Hoặc điều hướng xong
         ]);
 
         // Lấy cookies
@@ -42,10 +45,11 @@ app.post('/get-cookies', async (req, res) => {
         await browser.close();
         res.json({ status: 'success', cookies: storedCookies });
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ status: 'error', message: err.toString() });
+        console.error('Lỗi đăng nhập:', err);
+        res.status(500).json({ status: 'error', message: 'Đăng nhập thất bại hoặc quá thời gian chờ' });
     }
 });
+
 
 // 📡 Endpoint để truy vấn lại cookies đã lưu
 app.get('/cookies', (req, res) => {
