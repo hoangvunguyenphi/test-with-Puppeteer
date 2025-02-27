@@ -24,7 +24,7 @@ app.post('/get-cookies', async (req, res) => {
         await page.setViewport({ width: 1280, height: 800 });
 
         // Truy cập trang đăng nhập, chỉ chờ DOM tải xong
-        await page.goto('http://blueprint.cyberlogitec.com.vn/', { waitUntil: 'domcontentloaded', timeout: 5000 });
+        await page.goto('http://blueprint.cyberlogitec.com.vn/', { waitUntil: 'domcontentloaded' });
 
         // Nhập thông tin nhanh hơn
         await page.type('input[name="username"]', username, { delay: 10 });
@@ -35,8 +35,8 @@ app.post('/get-cookies', async (req, res) => {
 
         // Chờ xác định login thành công dựa trên sự thay đổi UI
         await Promise.race([
-            page.waitForSelector('#UI_DMM_HomeBody', { timeout: 5000 }), // Chờ trang chính xuất hiện
-            page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 5000 }) // Hoặc điều hướng xong
+            page.waitForSelector('body'),
+            page.waitForNavigation({ waitUntil: 'load' }) // Hoặc điều hướng xong
         ]);
 
         // Lấy cookies
