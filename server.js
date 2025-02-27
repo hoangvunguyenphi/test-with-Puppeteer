@@ -17,7 +17,7 @@ app.post('/get-cookies', async (req, res) => {
     try {
         const browser = await puppeteer.launch({
             args: ["--no-sandbox", "--disable-setuid-sandbox"],
-            headless: "new"
+            headless: "false"
         });
 
         const page = await browser.newPage();
